@@ -149,6 +149,8 @@
     }
 
     async function getOrderHistory(symbol, since, limit, params) {
+        let exchangeConfig = TS.projects.foundations.globals.taskConstants.TASK_NODE.parentNode.parentNode.parentNode.referenceParent.parentNode.parentNode.config
+
         if (exchange.has['fetchUnifiedAccountOrders'] === false) {
             if (exchange.has['fetchClosedOrders'] === false) {
                 logError("getOrderHistory -> Exchange does not support neither fetchUnifiedAccountOrders or fetchClosedOrders")
@@ -162,7 +164,11 @@
     
         try {
             let orders
-            if (exchange.has['fetchUnifiedAccountOrders']) {
+            let enableUnifiedAccount = false
+            if (exchangeConfig.options !== undefined) {
+                if (exchangeConfig.options.enableUnifiedAccount !== undefined) { enableUnifiedAccount = exchangeConfig.options.enableUnifiedAccount }
+            }
+            if (enableUnifiedAccount) {
                 orders = await exchange.fetchUnifiedAccountOrders(symbol, since, limit, params)
                 return orders
             }
@@ -171,7 +177,7 @@
                 return orders
             }
         } catch (err) {
-            const message = 'Get Order Hitory Unexpected Error'
+            const message = 'Get Order History Unexpected Error'
             let docs = {
                 project: 'Foundations',
                 category: 'Topic',
@@ -185,9 +191,9 @@
                 params: params
             }
 
-            TS.projects.education.utilities.docsFunctions.buildPlaceholder(docs, err, tradingSystemOrder.name, undefined, undefined, undefined, contextInfo)
+            TS.projects.education.utilities.docsFunctions.buildPlaceholder(docs, err, message, undefined, undefined, undefined, contextInfo)
 
-            tradingSystem.addError([tradingSystemOrder.id, message, docs])
+            tradingSystem.addError([message, message, docs])
 
             logError("getOrder -> Error = " + err.message);
             if (/[0-9a-z]+ NotFound/.test(err.message)) {
