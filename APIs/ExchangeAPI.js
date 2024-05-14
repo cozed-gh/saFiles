@@ -177,32 +177,14 @@
                 return orders
             }
         } catch (err) {
-            const message = 'Get Order History Unexpected Error'
+            const message = "getOrderHistory Unexpected Error" + err;
             let docs = {
                 project: 'Foundations',
                 category: 'Topic',
                 type: 'TS LF Trading Bot Error - ' + message,
                 placeholder: {}
             }
-            let contextInfo = {
-                symbol: symbol,
-                since: since,
-                limit: limit,
-                params: params
-            }
-
-            TS.projects.education.utilities.docsFunctions.buildPlaceholder(docs, err, message, undefined, undefined, undefined, contextInfo)
-
-            tradingSystem.addError([message, message, docs])
-
-            logError("getOrder -> Error = " + err.message);
-            if (/[0-9a-z]+ NotFound/.test(err.message)) {
-                logInfo("getOrderHistory -> NotFound, so order is actually open.")
-                order = {
-                    status: 'NotFound'
-                }
-                return orders
-            }
+            logError("getOrderHistory() -> Error: " + message + "\nDocs: " + docs + "\nerr=>" + err);
         }
     }
 
@@ -221,7 +203,12 @@
 
         try {
             let order
-            if (exchangeId === 'bybit') {
+            let enableUnifiedAccount = false
+            if (exchangeConfig.options !== undefined) {
+                if (exchangeConfig.options.enableUnifiedAccount !== undefined) { enableUnifiedAccount = exchangeConfig.options.enableUnifiedAccount }
+            }
+            
+            if (enableUnifiedAccount) {
                 order = await exchange.fetchUnifiedAccountOrders(symbol, undefined, undefined, params = {"orderId": orderId})
                 logInfo("getOrder -> Response from the Exchange: " + JSON.stringify(order));
                 return order[0]
