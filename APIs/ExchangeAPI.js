@@ -151,7 +151,7 @@
     async function getOrderHistory(symbol, since, limit, params) {
         let exchangeConfig = TS.projects.foundations.globals.taskConstants.TASK_NODE.parentNode.parentNode.parentNode.referenceParent.parentNode.parentNode.config
 
-        if (exchange.has['fetchUnifiedAccountOrders'] === false) {
+        if (exchange.has['fetchOrders'] === false) {
             if (exchange.has['fetchClosedOrders'] === false) {
                 logError("getOrderHistory -> Exchange does not support neither fetchUnifiedAccountOrders or fetchClosedOrders")
                 return
